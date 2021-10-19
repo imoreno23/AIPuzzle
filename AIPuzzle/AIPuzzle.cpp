@@ -31,7 +31,7 @@ int main()
     std::cin >> input;
     
     if (input == 1) {
-        eightPuz = { 1,2,3,4,0,6,7,5,8 };
+        eightPuz = { 4,1,3,2,6,8,7,5,0 };
         Puzzle.showPuzzle(eightPuz);
     }
     else {
@@ -47,7 +47,7 @@ int main()
 
     //user input message for what type of search is to be performed
     do {
-        std::cout << "Select Algorithm:\n(1) Uniform Cost Search\n(2) A* with Misplaced Tile Heuristic \n(3) A* with Manhattan Distance Heuristic\n(4) Play the 8-Puzzle\n";
+        std::cout << "Select Algorithm:\n(1) Uniform Cost Search\n(2) A* with Misplaced Tile Heuristic \n(3) A* with Manhattan Distance Heuristic\n";
         std::cin >> input;
         switch (input) {
         case 1:
@@ -62,49 +62,16 @@ int main()
             //perform Manhattan Distance Search
             //Puzzle.checkPuzzle(eightPuz);
             break;
-        case 4:
-            eightPuz = Puzzle.PlayPuzzle(eightPuz);
-            break;
         default:
-            //Not a valif input
+            //Not a valid input
             std::cout << "Not a valid input. Try again\n\n\n";
             break;
         }
-    } while (input <= 0 || input > 4);
+    } while (input <= 0 || input > 3);
 
-    ///
-    // Try Making a node, then showing the puzzle thats in that node
-    ///
     Node* root = newNode(eightPuz);
-    Puzzle.expandNode(root, eightPuz);
-    Puzzle.treeTraversal(root);
-    /*Puzzle.showPuzzle(root->puzzle);
-    Puzzle.showPuzzle(root->child[0]->puzzle);
-    Puzzle.showPuzzle(root->child[1]->puzzle);
-    Puzzle.showPuzzle(root->child[2]->puzzle);
-    Puzzle.showPuzzle(root->child[3]->puzzle);
-    Puzzle.expandNode(root->child[0], root->child[0]->puzzle);
-    Puzzle.expandNode(root->child[1], root->child[1]->puzzle);
-    Puzzle.expandNode(root->child[2], root->child[2]->puzzle);
-    Puzzle.expandNode(root->child[3], root->child[3]->puzzle);
-    Puzzle.showPuzzle(root->child[0]->child[0]->puzzle);
-    Puzzle.showPuzzle(root->child[0]->child[1]->puzzle);
-    Puzzle.showPuzzle(root->child[0]->child[2]->puzzle);
-    Puzzle.showPuzzle(root->child[0]->child[3]->puzzle);
-    Puzzle.showPuzzle(root->child[1]->child[0]->puzzle);
-    Puzzle.showPuzzle(root->child[1]->child[1]->puzzle);
-    Puzzle.showPuzzle(root->child[1]->child[2]->puzzle);
-    Puzzle.showPuzzle(root->child[1]->child[3]->puzzle);
-    Puzzle.showPuzzle(root->child[2]->child[0]->puzzle);
-    Puzzle.showPuzzle(root->child[2]->child[1]->puzzle);
-    Puzzle.showPuzzle(root->child[2]->child[2]->puzzle);
-    Puzzle.showPuzzle(root->child[2]->child[3]->puzzle);
-    Puzzle.showPuzzle(root->child[3]->child[0]->puzzle);
-    Puzzle.showPuzzle(root->child[3]->child[1]->puzzle);
-    Puzzle.showPuzzle(root->child[3]->child[2]->puzzle);
-    Puzzle.showPuzzle(root->child[3]->child[3]->puzzle);
-    Puzzle.showPuzzle(root->puzzle);
-    */
+    //Puzzle.PlayPuzzle(root);
+    Puzzle.uniformCost(root);
     
 }
 
@@ -137,11 +104,10 @@ bool Tiles::checkPuzzle(std::vector<int> puzzle)
     //std::cout << "Do they match?\n";
     std::vector<int> vect{ 1,2,3,4,5,6,7,8,0 };
     if (puzzle == vect) {
-        //std::cout << "Puzzle's are a match! good job!\n";
         return true;
     }
     else {
-        //std::cout << "Nope, got some work to do...\n";
+        return false;
     }
 }
 
@@ -150,49 +116,40 @@ bool Tiles::checkPuzzle(std::vector<int> puzzle)
 // (a.k.a the 0) up one slot. Also makes sure that a move up is a valid move,
 // if it is then it will return the 8-puzzle after the move as a vector.
 //
-std::vector<int> Tiles::blankUp(std::vector<int> puzzle)
+struct Node* Tiles::blankUp(struct Node* root)
 {
-    std::vector<int> tmp = puzzle;
-    int blank = findBlank(puzzle);
+    Node* tmp = root;
+    int blank = findBlank(tmp->puzzle);
     switch (blank) {
     case 0:
-        //std::cout << "Cannot move the blank space up!";
         break;
     case 1:
-        //std::cout << "Cannot move the blank space up!";
         break;
     case 2:
-        //std::cout << "Cannot move the blank space up!";
         break;
     case 3:
-        //std::cout << "Moving piece up...";
-        std::swap(tmp[blank], tmp[0]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[0]);
         break;
     case 4:
-        //std::cout << "Moving piece up...";
-        std::swap(tmp[blank], tmp[1]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[1]);
         break;
     case 5:
-        //std::cout << "Moving piece up...";
-        std::swap(tmp[blank], tmp[2]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[2]);
         break;
     case 6:
-        //std::cout << "Moving piece up...";
-        std::swap(tmp[blank], tmp[3]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[3]);
         break;
     case 7:
-        //std::cout << "Moving piece up...";
-        std::swap(tmp[blank], tmp[4]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[4]);
         break;
     case 8:
-        //std::cout << "Moving piece up...";
-        std::swap(tmp[blank], tmp[5]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[5]);
         break;
     default:
         break;
     }
-    checkPuzzle(tmp);
-    //showPuzzle(tmp);
+    checkPuzzle(tmp->puzzle);
+    //showPuzzle(tmp->puzzle);
     return tmp;
 }
 
@@ -201,49 +158,40 @@ std::vector<int> Tiles::blankUp(std::vector<int> puzzle)
 // (a.k.a the 0) down one slot. Also makes sure that a move down is a valid move,
 // if it is then it will return the 8-puzzle after the move as a vector.
 //
-std::vector<int> Tiles::blankDown(std::vector<int> puzzle)
+struct Node* Tiles::blankDown(struct Node* root)
 {
-    std::vector<int> tmp = puzzle;
-    int blank = findBlank(puzzle);
+    Node* tmp = root;
+    int blank = findBlank(tmp->puzzle);
     switch (blank) {
     case 0:
-        //std::cout << "Moving piece down...";
-        std::swap(tmp[blank], tmp[3]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[3]);
         break;
     case 1:
-        //std::cout << "Moving piece down...";
-        std::swap(tmp[blank], tmp[4]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[4]);
         break;
     case 2:
-        //std::cout << "Moving piece down...";
-        std::swap(tmp[blank], tmp[5]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[5]);
         break;
     case 3:
-        //std::cout << "Moving piece down...";
-        std::swap(tmp[blank], tmp[6]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[6]);
         break;
     case 4:
-        //std::cout << "Moving piece down...";
-        std::swap(tmp[blank], tmp[7]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[7]);
         break;
     case 5:
-        //std::cout << "Moving piece down...";
-        std::swap(tmp[blank], tmp[8]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[8]);
         break;
     case 6:
-        //std::cout << "Cannot move the blank space down!";
         break;
     case 7:
-        //std::cout << "Cannot move the blank space down!";
         break;
     case 8:
-        //std::cout << "Cannot move the blank space down!";
         break;
     default:
         break;
     }
-    checkPuzzle(tmp);
-    //showPuzzle(tmp);
+    checkPuzzle(tmp->puzzle);
+    //showPuzzle(tmp->puzzle);
     return tmp;
 }
 
@@ -252,49 +200,40 @@ std::vector<int> Tiles::blankDown(std::vector<int> puzzle)
 // (a.k.a the 0) to the left one slot. Also makes sure that a move to the left is a valid move,
 // if it is then it will return the 8-puzzle after the move as a vector.
 //
-std::vector<int> Tiles::blankLeft(std::vector<int> puzzle)
+struct Node* Tiles::blankLeft(struct Node* root)
 {
-    std::vector<int> tmp = puzzle;
-    int blank = findBlank(puzzle);
+    Node* tmp = root;
+    int blank = findBlank(tmp->puzzle);
     switch (blank) {
     case 0:
-        //std::cout << "Cannot move the blank space left!";
         break;
     case 1:
-        //std::cout << "Moving piece left...";
-        std::swap(tmp[blank], tmp[0]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[0]);
         break;
     case 2:
-        //std::cout << "Moving piece left...";
-        std::swap(tmp[blank], tmp[1]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[1]);
         break;
     case 3:
-        //std::cout << "Cannot move the blank space left!";
         break;
     case 4:
-        //std::cout << "Moving piece left...";
-        std::swap(tmp[blank], tmp[3]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[3]);
         break;
     case 5:
-        //std::cout << "Moving piece left...";
-        std::swap(tmp[blank], tmp[4]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[4]);
         break;
     case 6:
-        //std::cout << "Cannot move the blank space left!";
         break;
     case 7:
-        //std::cout << "Moving piece left...";
-        std::swap(tmp[blank], tmp[6]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[6]);
         break;
     case 8:
-        //std::cout << "Moving piece left...";
-        std::swap(tmp[blank], tmp[7]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[7]);
         break;
     default:
         break;
     }
-    checkPuzzle(tmp);
-    //showPuzzle(tmp);
+    checkPuzzle(tmp->puzzle);
+    //showPuzzle(tmp->puzzle);
     return tmp;
 }
 
@@ -303,50 +242,40 @@ std::vector<int> Tiles::blankLeft(std::vector<int> puzzle)
 // (a.k.a the 0) to the right one slot. Also makes sure that a move to the right is a valid move,
 // if it is then it will return the 8-puzzle after the move as a vector.
 //
-std::vector<int> Tiles::blankRight(std::vector<int> puzzle)
+struct Node* Tiles::blankRight(struct Node* root)
 {
-    std::vector<int> tmp = puzzle;
-    int blank = findBlank(puzzle);
+    Node* tmp = root;
+    int blank = findBlank(tmp->puzzle);
     switch (blank) {
     case 0:
-        //std::cout << "Moving piece right...";
-        std::swap(tmp[blank], tmp[1]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[1]);
         break;
     case 1:
-        //std::cout << "Moving piece right...";
-        std::swap(tmp[blank], tmp[2]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[2]);
         break;
     case 2:
-        //std::cout << "Cannot move the blank space right!";
         break;
     case 3:
-        //std::cout << "Moving piece right...";
-        std::swap(tmp[blank], tmp[4]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[4]);
         break;
     case 4:
-        //std::cout << "Moving piece right...";
-        std::swap(tmp[blank], tmp[5]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[5]);
         break;
     case 5:
-        //std::cout << "Cannot move the blank space right!";
-        break;
         break;
     case 6:
-        //std::cout << "Moving piece right...";
-        std::swap(tmp[blank], tmp[7]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[7]);
         break;
     case 7:
-        //std::cout << "Moving piece right...";
-        std::swap(tmp[blank], tmp[8]);
+        std::swap(tmp->puzzle[blank], tmp->puzzle[8]);
         break;
     case 8:
-        //std::cout << "Cannot move the blank space right!";
         break;
     default:
         break;
     }
-    checkPuzzle(tmp);
-    //showPuzzle(tmp);
+    checkPuzzle(tmp->puzzle);
+    //showPuzzle(tmp->puzzle);
     return tmp;
 }
 
@@ -365,89 +294,164 @@ int Tiles::findBlank(std::vector<int> puzzle)
             continue;
         }
     }
+    return NULL;
 }
+
+bool Tiles::canMoveUp(std::vector<int> puzzle)
+{
+    int tmp = findBlank(puzzle);
+    if (tmp == 0 || tmp == 1 || tmp == 2) {
+        return false;
+    }
+    else {
+        return true;
+    }
+    
+}
+
+bool Tiles::canMoveDown(std::vector<int> puzzle)
+{
+    int tmp = findBlank(puzzle);
+    if (tmp == 6 || tmp == 7 || tmp == 8) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool Tiles::canMoveLeft(std::vector<int> puzzle)
+{
+    int tmp = findBlank(puzzle);
+    if (tmp == 0 || tmp == 3 || tmp == 6) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+bool Tiles::canMoveRight(std::vector<int> puzzle)
+{
+    int tmp = findBlank(puzzle);
+    if (tmp == 2 || tmp == 5 || tmp == 8) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
+
 
 //
 // I used this function to play the 8-puzzle myself to make sure it was working properly, also to check
 // that each of my functions used to move the blank spot were working correctly. Takes in a vector to 
 // represent the 8-puzzle and allows the user to play the puzzle.
 //
-std::vector<int> Tiles::PlayPuzzle(std::vector<int> puzzle)
+std::vector<int> Tiles::PlayPuzzle(struct Node* root)
 {
+    Node* p = root;
+    
     int input;
     std::vector<int> vect{ 1, 2, 3, 4, 5, 6, 7, 8, 0 };
-    showPuzzle(puzzle);
+    showPuzzle(p->puzzle);
     do {
         std::cout << "(1) Move tile up\n(2) Move tile down\n(3) Move tile left\n(4) Move tile right\n ";
         std::cin >> input;
         switch (input) {
         case 1:
-            puzzle = blankUp(puzzle);
+            p = blankUp(p);
             break;
         case 2:
-            puzzle = blankDown(puzzle);
+            p = blankDown(p);
             break;
         case 3:
-            puzzle = blankLeft(puzzle);
+            p = blankLeft(p);
             break;
         case 4:
-            puzzle = blankRight(puzzle);
+            p = blankRight(p);
             break;
         default:
             std::cout << "Not a valid input\n";
             break;
         }
 
-    } while (puzzle != vect);
-    return puzzle;
+    } while (p->puzzle != vect);
+    std::cout << "Match!\n";
+    return p->puzzle;
 }
 
-void Tiles::expandNode(struct Node * root, std::vector<int> puzzle)
+//
+//function that takes in a node as a parameter and expands the node one move in every direction
+//
+void Tiles::expandNode(struct Node* root)
 {
-    (root->child).push_back(newNode(blankUp(puzzle)));
-    (root->child).push_back(newNode(blankDown(puzzle)));
-    (root->child).push_back(newNode(blankLeft(puzzle)));
-    (root->child).push_back(newNode(blankRight(puzzle)));
+    if (canMoveUp(root->puzzle)) {
+        //std::cout << "expanding up from\n";
+        //showPuzzle(root->puzzle);
+        //std::cout << "~~~~~~~~~~~~~~~~~~~~~~";
+        (root->child).push_back(newNode(blankUp(root)->puzzle));
+        blankDown(root)->puzzle;
+    }
+    if (canMoveDown(root->puzzle)) {
+        //std::cout << "expanding down from\n";
+        //showPuzzle(root->puzzle);
+        //std::cout << "~~~~~~~~~~~~~~~~~~~~~~";
+        (root->child).push_back(newNode(blankDown(root)->puzzle));
+        blankUp(root)->puzzle;
+    }
+    if (canMoveLeft(root->puzzle)) {
+        //std::cout << "expanding left from\n";
+        //showPuzzle(root->puzzle);
+        //std::cout << "~~~~~~~~~~~~~~~~~~~~~~";
+        (root->child).push_back(newNode(blankLeft(root)->puzzle));
+        blankRight(root)->puzzle;
+    }
+    if (canMoveRight(root->puzzle)) {
+        //std::cout << "expanding right from\n";
+        //showPuzzle(root->puzzle);
+        //std::cout << "~~~~~~~~~~~~~~~~~~~~~~";
+        (root->child).push_back(newNode(blankRight(root)->puzzle));
+        blankLeft(root)->puzzle;
+    } 
 }
 
-void Tiles::treeTraversal(Node* root)
+//
+// function for the uniform Distance Algorithm. takes in the root node with contains the starting
+// puzzle vector sets it to the root node then traverses through it and expands it when it doesnt 
+// match with any puzzle configuration that weve seen before. then checks all the children for the
+// same thing and continues until if finds a matching vector to the solved puzzle vector. 
+//
+struct Node* Tiles::uniformCost(struct Node* root)
 {
     std::queue<Node*>currNode;
     std::vector<Node*>oldNodes;
     currNode.push(root);
 
     if (root == NULL) {
-        return;
+        return NULL;
     }
     while (!currNode.empty()) {
         int n = currNode.size();
         while (n > 0) {
             Node* p = currNode.front();
-            expandNode(p, p->puzzle);
+            expandNode(p);
             oldNodes.push_back(p);
             currNode.pop();
 
             for (unsigned int i = 0; i < p->child.size(); i++) {
                 showPuzzle(p->child[i]->puzzle);
-                for (unsigned int j = 0; j < oldNodes.size(); j++) {
-                    if (p->child[i]->puzzle == oldNodes[j]->puzzle) {                       
-                        std::cout << "this is an puzzle format we've seen before\n";
-                        continue;
-                    }
-                    else if (checkPuzzle(p->child[i]->puzzle)) {                       
-                        std::cout << "ITS A MATCH\n";
-                        return;
-                    }
-                    else {
-                        currNode.push(p->child[i]);
-                    }
-                }  
+                if (checkPuzzle(p->child[i]->puzzle)) {
+                    std::cout << "ITS A MATCH\n";
+                    return p->child[i];
+                }
+                currNode.push(p->child[i]);
             }
             n--;
         }
-        std::cout << "\n";
     }
+    return NULL;
 }
-
 
 
