@@ -33,35 +33,55 @@ int main()
     std::vector<int> eightPuz;
 
     //Intro Message
-    std::cout << "Welcome to my 8-Puzzle solver. Type 1 for a default puzzle and 2 to create your own \n";
-    std::cin >> input;
-
-    if (input == 1) {
-        //eightPuz = { 1,0,3,4,2,6,7,5,8 };     //Easy
-        //eightPuz = { 1,2,3,4,8,0,7,6,5 };     //Easy for manDist (ppt 2 slide 27)
-        //eightPuz = { 4,1,0,7,2,3,5,8,6 };     //  
-        eightPuz = { 4,0,1,7,2,3,5,8,6 };     //
-        //eightPuz = { 1,2,3,4,5,8,6,7,0 };     //Difficult(from notes ppt 3 slide 27)
-        Puzzle.showPuzzle(eightPuz);
-    }
-    else {
-        //User input messages and vector filling
-        std::cout << "Enter your puzzle, using 0 represents the blank. Please only enter valid 8-Puzzles. Enter the puzzle delimiting the numbers by hitting ENTER.\n";
-        
-        for (int i = 0; i < 9; i++) {
+    std::cout << "Welcome to my 8-Puzzle solver.\n\n";
+    for (;;) {
+        std::cout << "Type 1 for a default puzzle and 2 to create your own \n\n";
+        std::cin >> input;
+        if (input == 1) {
+            std::cout << "\nWhich difficulty level puzzle would you like?\n(1) Very Easy\n(2) Easy\n(3) Medium\n(4) Difficult\n(5) Broken\n\nPlease make a selection: ";
             std::cin >> input;
-            eightPuz.push_back(input);
+            switch (input) {
+            case 1:
+                eightPuz = { 1,0,3,4,2,6,7,5,8 };     //Very Easy
+                break;
+            case 2:
+                eightPuz = { 1,2,3,4,8,0,7,6,5 };     //Easy (ppt 2 slide 27)
+                break;
+            case 3:
+                eightPuz = { 4,1,0,7,2,3,5,8,6 };     //Medium 
+                break;
+            case 4:
+                eightPuz = { 4,0,1,7,2,3,5,8,6 };     //Difficult
+                break;
+            case 5:
+                eightPuz = { 1,2,3,4,5,8,6,7,0 };     //Difficult (from notes ppt 3 slide 27) broken manDist(not optimal)
+                break;
+            default:
+                std::cout << "Not a valid selection!\n";
+                break;
+            }
+            std::cout << "\nthis is you puzzle\n";
+            Puzzle.showPuzzle(eightPuz);
+            std::cout << "\n^^^^^^^^^^^^^^^^^^\n\n\n";
         }
-        Puzzle.showPuzzle(eightPuz);
-    }
-    for(;;){
-        Node* root = newNode(eightPuz);
+        else {
+            //User input messages and vector filling
+            std::cout << "Enter your puzzle, using 0 represents the blank. Please only enter valid 8-Puzzles. Enter the puzzle delimiting the numbers by hitting ENTER.\n";
 
-        //user input message for what type of search is to be performed
-
+            for (int i = 0; i < 9; i++) {
+                std::cin >> input;
+                eightPuz.push_back(input);
+            }
+            Puzzle.showPuzzle(eightPuz);
+        }
         do {
-            std::cout << "Select Algorithm:\n(1) Uniform Cost Search\n(2) A* with Misplaced Tile Heuristic \n(3) A* with Manhattan Distance Heuristic\n";
+            Node* root = newNode(eightPuz);
+            //user input message for what type of search is to be performed
+            std::cout << "Select Algorithm:\n(1) Uniform Cost Search\n(2) A* with Misplaced Tile Heuristic \n(3) A* with Manhattan Distance Heuristic\n(4) Select New Puzzle\n(5) Quit\n\n\n";
             std::cin >> input;
+            if (input == 4) {
+                break;
+            }
             switch (input) {
             case 1:
                 //perform Uniform Cost Search
@@ -75,13 +95,17 @@ int main()
                 //perform Manhattan Distance Search
                 Puzzle.manTile(root);
                 break;
+            case 4:
+            case 5:
+                return 0;
             default:
                 //Not a valid input
                 std::cout << "Not a valid input. Try again\n\n\n";
                 break;
             }
-        } while (input <= 0 || input > 3);
+        } while (input > 0 || input < 4);
     }
+    
 }
 
 
@@ -120,6 +144,9 @@ bool Tiles::checkPuzzle(std::vector<int> puzzle)
     }
 }
 
+//
+//
+//
 bool Tiles::checkDoubles(std::vector<int> n, std::vector<int> o)
 {
     if (n == o) {
@@ -499,6 +526,7 @@ struct Node* Tiles::getSmallCost(std::vector<Node*> currNode)
         if (tmp[i]->cost < currSmall) {
             currSmall = tmp[i]->cost;
             tmpNode = tmp[i];
+            std::swap(currNode[i], currNode[0]);
         }
     }
     return tmpNode;
@@ -622,7 +650,7 @@ struct Node* Tiles::uniDist(struct Node* initialState)
     while (!currNode.empty()) {             //while our queue is not empty perform expansion and checks
         int qSize = currNode.size();        
         while (qSize > 0) {
-            Node* p = currNode.front();     //node to be checked gets putlled from queue front
+            Node* p = currNode.front();     //node to be checked gets pulled from queue front
             currNode.pop();
             if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
                 expanded++;
@@ -635,6 +663,7 @@ struct Node* Tiles::uniDist(struct Node* initialState)
                     std::cout << "Nodes expanded: " << expanded << std::endl;
                     std::cout << "Max queue size: " << currNode.size() << std::endl;
                     std::cout << "Solution depth: " << findDepth(initialState) << std::endl;
+                    oldNodes.clear();
                     return p->child[i];                                 //return that child;
                 }
                 currNode.push(p->child[i]);                             //if the puzzle isnt a match, push the child in question to currNodes queue to be
@@ -665,11 +694,7 @@ Node* Tiles::misTile(Node* initialState)
     }
     while (!currNode.empty()) {             //while our queue is not empty perform expansion and checks
         int qSize = currNode.size();
-        int currSmall = INT_MAX;
-        for (unsigned int i = 0; i < currNode.size(); i++) {
-            if (currNode[i]->cost < currSmall) {
-                currSmall = currNode[i]->cost;
-            }
+        for (unsigned int i = 0; i < qSize; i++) {   //iterate through currNode vector and fill in the cost of the nodes if they still have the initial 0 value
             if (currNode[i]->cost == 0) {
                 int depthCost, mtCost;
                 mtCost = findMTCost(currNode[i]->puzzle);
@@ -678,30 +703,32 @@ Node* Tiles::misTile(Node* initialState)
                 currNode[i]->cost = mtCost + depthCost;
             }
         }
-        while (qSize > 0) {
-            Node* p = getSmallCost(currNode);      //node to be checked gets pulled from queue front
-            for (unsigned int i = 0; i < currNode.size(); i++) {
-                if (p == currNode[i]) {
-                    currNode.erase(currNode.begin() + i);
-                }
+        Node* p = getSmallCost(currNode);               //node to be checked gets pulled from queue front
+        for (unsigned int i = 0; i < qSize; i++) {
+            if (p->puzzle == currNode[i]->puzzle) {
+                qSize--;
+                currNode.erase(currNode.begin() + i);
             }
-            if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
-                expanded++;
-            }
-            oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
-            for (unsigned int i = 0; i < p->child.size(); i++) {        //iterate through the children of the current node in question for a match
-                showPuzzle(p->child[i]->puzzle);                        //show the nodes children in question
-                if (checkPuzzle(p->child[i]->puzzle)) {                 //if child matched print out that its a match and the data of the match
-                    std::cout << "ITS A MATCH\n";
-                    std::cout << "Nodes expanded: " << expanded << std::endl;
-                    std::cout << "Max queue size: " << currNode.size() << std::endl;
-                    std::cout << "Solution depth: " << findDepth(initialState) << std::endl;
-                    return p->child[i];                                 //return that child;
-                }
-                currNode.push_back(p->child[i]);                        //if the puzzle isnt a match, push the child in question to currNodes queue to be
-            }                                                           //checked when it gets to the front of the queue
-            qSize--;                                                    //decrease the qsize by 1;
         }
+        showPuzzle(p->puzzle);
+        std::cout << "node in front ^ \n";
+        if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
+            expanded++;
+        }
+        oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
+        for (unsigned int i = 0; i < p->child.size(); i++) {        //iterate through the children of the current node in question for a match
+            showPuzzle(p->child[i]->puzzle);                        //show the nodes children in question
+            if (checkPuzzle(p->child[i]->puzzle)) {                 //if child matched print out that its a match and the data of the match
+                std::cout << "ITS A MATCH\n";
+                std::cout << "Nodes expanded: " << expanded << std::endl;
+                std::cout << "Max queue size: " << currNode.size() << std::endl;
+                std::cout << "Solution depth: " << findDepth(initialState) << std::endl;
+                return p->child[i];                                 //return that child;
+            }
+            else {
+                currNode.push_back(p->child[i]);                        //if the puzzle isnt a match, push the child in question to currNodes queue to be
+            }
+        }                                                           //checked when it gets to the front of the queue
     }
     return nullptr;
 }
@@ -719,11 +746,7 @@ Node* Tiles::manTile(Node* initialState)
     }
     while (!currNode.empty()) {             //while our queue is not empty perform expansion and checks
         int qSize = currNode.size();
-        int currSmall = INT_MAX;
         for (unsigned int i = 0; i < currNode.size(); i++) {
-            if (currNode[i]->cost < currSmall) {
-                currSmall = currNode[i]->cost;
-            }
             if (currNode[i]->cost == 0) {
                 int depthCost, manCost;
                 manCost = findManCost(currNode[i]->puzzle);
@@ -732,30 +755,30 @@ Node* Tiles::manTile(Node* initialState)
                 currNode[i]->cost = manCost + depthCost;
             }
         }
-        while (qSize > 0) {
-            Node* p = getSmallCost(currNode);      //node to be checked gets pulled from queue front
-            for (unsigned int i = 0; i < currNode.size(); i++) {
-                if (p == currNode[i]) {
-                    currNode.erase(currNode.begin() + i);
-                }
+        Node* p = getSmallCost(currNode);      //node to be checked gets pulled from queue front
+        showPuzzle(p->puzzle);
+        std::cout << "node in front ^ \n";
+        for (unsigned int i = 0; i < currNode.size(); i++) {
+            if (p == currNode[i]) {
+                qSize--;
+                currNode.erase(currNode.begin() + i);
             }
-            if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
-                expanded++;
-            }
-            oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
-            for (unsigned int i = 0; i < p->child.size(); i++) {        //iterate through the children of the current node in question for a match
-                showPuzzle(p->child[i]->puzzle);                        //show the nodes children in question
-                if (checkPuzzle(p->child[i]->puzzle)) {                 //if child matched print out that its a match and the data of the match
-                    std::cout << "ITS A MATCH\n";
-                    std::cout << "Nodes expanded: " << expanded << std::endl;
-                    std::cout << "Max queue size: " << currNode.size() << std::endl;
-                    std::cout << "Solution depth: " << findDepth(initialState) << std::endl;
-                    return p->child[i];                                 //return that child;
-                }
-                currNode.push_back(p->child[i]);                        //if the puzzle isnt a match, push the child in question to currNodes queue to be
-            }                                                           //checked when it gets to the front of the queue
-            qSize--;                                                    //decrease the qsize by 1;
         }
+        if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
+            expanded++;
+        }
+        oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
+        for (unsigned int i = 0; i < p->child.size(); i++) {        //iterate through the children of the current node in question for a match
+            showPuzzle(p->child[i]->puzzle);                        //show the nodes children in question
+            if (checkPuzzle(p->child[i]->puzzle)) {                 //if child matched print out that its a match and the data of the match
+                std::cout << "ITS A MATCH\n";
+                std::cout << "Nodes expanded: " << expanded << std::endl;
+                std::cout << "Max queue size: " << currNode.size() << std::endl;
+                std::cout << "Solution depth: " << findDepth(initialState) << std::endl;
+                return p->child[i];                                 //return that child;
+            }
+            currNode.push_back(p->child[i]);                        //if the puzzle isnt a match, push the child in question to currNodes queue to be
+        }                                                           //checked when it gets to the front of the queue
     }
     return nullptr;
 }
