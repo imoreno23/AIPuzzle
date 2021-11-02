@@ -18,7 +18,9 @@ public:
 	bool canMoveLeft(std::vector<int>puzzle);
 	bool canMoveRight(std::vector<int>puzzle);
 	int findDepth(struct Node* root);
+	void setDepth(struct Node* root);
 	struct Node* getSmallCost(std::vector<Node*>currNode);
+	struct Node* getSmallCostHeur(std::vector<Node*>currNode);
 	struct Node* blankUp(struct Node* root);
 	struct Node* blankDown(struct Node* root);
 	struct Node* blankLeft(struct Node* root);
