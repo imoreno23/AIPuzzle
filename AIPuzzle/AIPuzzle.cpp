@@ -45,13 +45,13 @@ int main()
     int input;
     const int maxNum = 3;
     std::vector<int> eightPuz;
-    time_t start, stop;
+    clock_t start, stop;
     double duration;
 
     //Intro Message
     std::cout << "Welcome to my 8-Puzzle solver.\n\n";
     for (;;) {
-        eightPuz.clear();
+        eightPuz.clear();  //<-This clears the last puzzle in the vector
         std::cout << "Type 1 for a default puzzle and 2 to create your own \n\n";
         std::cin >> input;
         if (input == 1) {
@@ -110,27 +110,28 @@ int main()
             switch (input) {
             case 1:
                 //perform Uniform Cost Search
-                time(&start);
+                start = clock();
                 Puzzle.uniDist(root);
-                time(&stop);
-                duration = double(stop - start);
-                std::cout << "time taken: " << std::fixed << duration << std::setprecision(5) << " seconds.\n";
+                stop = clock();
+                duration = double(stop - start)/double (CLOCKS_PER_SEC);
+                std::cout << "time taken: " << std::fixed << duration << std::setprecision(4) << " seconds.\n";
                 break;
             case 2:
                 //perform Misplaced Tile Search
-                time(&start);
+                start = clock();
                 Puzzle.misTile(root);
-                time(&stop);
-                duration = double(stop - start);
-                std::cout << "time taken: " << std::fixed << duration << std::setprecision(5) << " seconds.\n";
+                stop = clock();
+                duration = double(stop - start) / double(CLOCKS_PER_SEC);
+                std::cout << "time taken: " << std::fixed << duration << std::setprecision(4) << " seconds.\n";
                 break;
             case 3:
                 //perform Manhattan Distance Search
-                time(&start);
+                start = clock();
                 Puzzle.manTile(root);
-                time(&stop);
-                duration = double(stop - start);
-                std::cout << "time taken: " << std::fixed << duration << std::setprecision(5) << " seconds.\n";
+                stop = clock();
+                
+                duration = double(stop - start) / double(CLOCKS_PER_SEC);
+                std::cout << "time taken: " << std::fixed << duration << std::setprecision(4) << " seconds.\n";
                 break;
             case 4:
                 break;
@@ -144,7 +145,7 @@ int main()
             if (input == 4) {
                 break;
             }
-        } while (input > 0 || input < 4);
+        } while (input > 0 || input < 6);
     }    
 }
 
@@ -153,7 +154,7 @@ int main()
 // Debug program: F5 or Debug > Start Debugging menu
 
 //
-//Function that simply prints out an input vector formatted as an 8-puzzle.
+//Function that simply prints out an input vector formatted as an 8-puzzle. takes in a vector representation of a puzzle 
 //
 void Tiles::showPuzzle(std::vector<int> puzzle)
 {
@@ -185,7 +186,10 @@ bool Tiles::checkPuzzle(std::vector<int> puzzle)
 }
 
 //
-//
+// This function checks for two vectors being equal to each other. this is a helper function
+// that assists in another function in the program. its main use is to check for the current 
+// nodes puzzle to match the node in the old nodes also used to pop off a node from the vector
+// of Nodes to be checked.
 //
 bool Tiles::checkDoubles(std::vector<int> n, std::vector<int> o)
 {
@@ -198,9 +202,9 @@ bool Tiles::checkDoubles(std::vector<int> n, std::vector<int> o)
 }
 
 //
-// Function which takes in a vector that represents our puzzle and moves the blank spot
-// (a.k.a the 0) up one slot. Also makes sure that a move up is a valid move,
-// if it is then it will return the 8-puzzle after the move as a vector.
+// Function which takes in a Node structure and looks at the puzzle within it and moves the zero
+// in the up direction. This is done by swapping the two values that would be swapped depending 
+// on where the zero is located within the puzzle.
 //
 struct Node* Tiles::blankUp(struct Node* root)
 {
@@ -239,9 +243,9 @@ struct Node* Tiles::blankUp(struct Node* root)
 }
 
 //
-// Function which takes in a vector that represents our puzzle and moves the blank spot
-// (a.k.a the 0) down one slot. Also makes sure that a move down is a valid move,
-// if it is then it will return the 8-puzzle after the move as a vector.
+// Function which takes in a Node structure and looks at the puzzle within it and moves the zero
+// in the down direction. This is done by swapping the two values that would be swapped depending 
+// on where the zero is located within the puzzle.
 //
 struct Node* Tiles::blankDown(struct Node* root)
 {
@@ -280,9 +284,9 @@ struct Node* Tiles::blankDown(struct Node* root)
 }
 
 //
-// Function which takes in a vector that represents our puzzle and moves the blank spot
-// (a.k.a the 0) to the left one slot. Also makes sure that a move to the left is a valid move,
-// if it is then it will return the 8-puzzle after the move as a vector.
+// Function which takes in a Node structure and looks at the puzzle within it and moves the zero
+// in the left direction. This is done by swapping the two values that would be swapped depending 
+// on where the zero is located within the puzzle.
 //
 struct Node* Tiles::blankLeft(struct Node* root)
 {
@@ -321,9 +325,9 @@ struct Node* Tiles::blankLeft(struct Node* root)
 }
 
 //
-// Function which takes in a vector that represents our puzzle and moves the blank spot
-// (a.k.a the 0) to the right one slot. Also makes sure that a move to the right is a valid move,
-// if it is then it will return the 8-puzzle after the move as a vector.
+// Function which takes in a Node structure and looks at the puzzle within it and moves the zero
+// in the right direction. This is done by swapping the two values that would be swapped depending 
+// on where the zero is located within the puzzle.
 //
 struct Node* Tiles::blankRight(struct Node* root)
 {
@@ -362,8 +366,10 @@ struct Node* Tiles::blankRight(struct Node* root)
 }
 
 //
-// takes in a vector which represents our 8-puzzle then looks for a 0 in the puzzle and outputs which 
-// slot of the puzzle its in as an integer which is used to solve the puzzle.
+// This function is a helper function that takes in a vector which represents 
+// our 8-puzzle then looks for a 0 in the puzzle and outputs which 
+// slot of the puzzle its in as an integer which is used to solve the puzzle by 
+// moving the zero around in other functions
 //
 int Tiles::findBlank(std::vector<int> puzzle)
 {
@@ -381,7 +387,11 @@ int Tiles::findBlank(std::vector<int> puzzle)
 
 //
 // findMTCost function is meant to find the estimated cost to get to the final state of the puzzle by 
-// using the missing tile heuristic. 
+// using the missing tile heuristic. If the puzzle is correct already the function will return zero 
+// as its cost which is the case for missing tile; as all the tiles are in their correct place. if the 
+// puzzle isnt correct it will check to see if zero is in the bottom right ([8]) if its not then cost 
+// will increment, then it will check the rest of the puzzle if the location of the vectors value doesnt
+// correspond with what should be there cost will be incremented. once done cost will be returned.
 //
 int Tiles::findMTCost(std::vector<int> puzzle)
 {
@@ -404,6 +414,14 @@ int Tiles::findMTCost(std::vector<int> puzzle)
     
 }
 
+//
+// The findManCost function will find the cost at each node using the manhattan distance heuristic. if the
+// puzzle is correct the finction will return 0 as that is the cost. if the puzzle doesnt match it will iterate 
+// through the puzzle vector and depending on where each node is, it will increment cost by how many tiles that
+// number is misplaced. it will do this for every tile and depending on which number is there it will calculate
+// what its necessary distance to target is. once every spot in the puzzle is checked it will return the cost 
+// accumulated.
+//
 int Tiles::findManCost(std::vector<int> puzzle)
 {
     int cost = 0;
@@ -508,6 +526,13 @@ int Tiles::findManCost(std::vector<int> puzzle)
     
 }
 
+//
+// This is a helper function for the manhattan distance function. it will return the cost of the necessary moves
+// to get a piece to its target location. this was my way of solving for the fact that in a vector the numbers are
+// organized linearly but in the puzzle they are arranged as a 2D array. so for example; if 0 was in slot 0 then 
+// it would have to go 8 spaces over in the vector but in a puzzle format this is only a misplacement of 4 slots.
+// This function accounts for that and returns the correct cost of a misplacement.
+//
 int Tiles::getCost(int diff)
 {
     int val = 0;
@@ -523,6 +548,10 @@ int Tiles::getCost(int diff)
     return val;
 }
 
+//
+// The following four functions are helper functions that check to see if a puzzle can indeed move in the direction 
+// it was instructed to move
+//
 bool Tiles::canMoveUp(std::vector<int> puzzle)
 {
     int tmp = findBlank(puzzle);
@@ -568,10 +597,17 @@ bool Tiles::canMoveRight(std::vector<int> puzzle)
     }
 }
 
-/*bool Tiles::sortFunc(int i, int j) {
-    return true;
-}*/
-
+//
+// This function takes in a vector of Nodes and finds the node within them that 
+// has the smallest cost. this is used for uniformed distance search due to the 
+// fact that all the moves have a cost of one, this function will simply end up 
+// just checking which node in the tree at the current depth hasnt been checked. 
+// 
+// The function just below this one accounts for heuristics and how they effect 
+// the searching procedure. at their core both functions do the same thing, one 
+// one simply accounts for the depth and cost of any given node as those are the
+// important elements to heuristic searches
+//
 struct Node* Tiles::getSmallCost(std::vector<Node*> currNode)
 {
     int currSmall = INT_MAX;
@@ -644,31 +680,12 @@ std::vector<int> Tiles::PlayPuzzle(struct Node* root)
 }
 
 //
-//function used to return the depth of the tree that is being worked on. used to report once puzzle is
-//  solved what the size of the tree is in which the node was found that6 had the correct puzzle.
-//
-int Tiles::findDepth(Node* root)
-{
-    int maxDepth = -1;
-    if (!root) {
-        return 0;
-    }
-    for (std::vector<Node*>::iterator it = root->child.begin(); it != root->child.end(); it++) {
-        maxDepth = std::max(maxDepth, findDepth(*it));
-    }
-    return maxDepth + 1;
-}
-
-void Tiles::setDepth(Node* root) 
-{
-    root->depth = (root->parent->depth) + 1;
-}
-
-//
 // function that takes in a node as a parameter as well as a vector of node
 // pointers and expands the node one move in every direction if the puzzle 
 // in that node has not been seen before. every direction will get checked to
-// see if expansion in that direction is possible before being expanded.
+// see if expansion in that direction is possible before being expanded. before 
+// expanding the function will check if the puzzle is a puzzle weve seen before
+// by checking it against a vector of nodes containing the already checked puzzles.
 //
 bool Tiles::expandNode(struct Node* root, std::vector<Node*> v)
 {
@@ -705,8 +722,10 @@ bool Tiles::expandNode(struct Node* root, std::vector<Node*> v)
 //
 // function for the uniform Distance Algorithm. takes in the root node with contains the starting
 // puzzle vector sets it to the root node then traverses through it and expands it when it doesnt 
-// match with any puzzle configuration that weve seen before. then checks all the children for the
-// same thing and continues until if finds a matching vector to the solved puzzle vector. 
+// match with any puzzle configuration that weve seen before. then checks which of teh remaining 
+// nodes has the lowest cost value which for this is equal to its depth since all of the moves come
+// at a cost of 1, and continues in this fashion until if finds a matching vector to the solved 
+// puzzle vector. 
 /////
 // NOTE: uniDist works the same as Breadth first search in this case because all the tiles movements 
 // have a cost of 1. this means that regardless of using the cost as a variable to search for, all
@@ -716,38 +735,49 @@ bool Tiles::expandNode(struct Node* root, std::vector<Node*> v)
 //
 struct Node* Tiles::uniDist(struct Node* initialState)
 {   
-    int expanded = 0;                       //used to keep track of how many nodes were expanded
-    std::vector<Node*>currNode;               //list of Nodes which will be filled will the trees nodes
-    std::vector<Node*>oldNodes;             //vector of old nodes to be checked for already checked nodes
+    int expanded = 0;                       
+    std::vector<Node*>currNode;             
+    std::vector<Node*>oldNodes;             
 
-    currNode.push_back(initialState);       //push the node containing the puzzles init state
-    if (initialState == nullptr) {          //if initial state is empty return
+    currNode.push_back(initialState);       
+    if (initialState == nullptr) {          
         return nullptr;
     }
-    while (!currNode.empty()) {             //while our queue is not empty perform expansion and checks
-        Node* p = getSmallCost(currNode);               //node to be checked gets pulled to the queue front
+
+    //while our queue is not empty perform expansion and checks
+    while (!currNode.empty()) {             
+        Node* p = getSmallCost(currNode);              
         for (unsigned int i = 0; i < currNode.size(); i++) {
             if (checkDoubles(currNode[i]->puzzle, p->puzzle)) {
                 currNode.erase(currNode.begin() + i);
             }
         }
-        std::cout << "the best state to expand with a g(n) = " << p->cost << " and h(n) = " << p->depth << " is...\n";
+        std::cout << "the best state to expand with a f(n) = " << p->depth << " is...";
         showPuzzle(p->puzzle);
-        if (checkPuzzle(p->puzzle)) {                 //if child matched print out that its a match and the data of the match
+
+        //if child matched print out that its a match and the data of the match
+        if (checkPuzzle(p->puzzle)) {                 
             std::cout << "ITS A MATCH\n";
             std::cout << "Nodes expanded: " << expanded << std::endl;
             std::cout << "Max queue size: " << currNode.size() << std::endl;
-            std::cout << "Solution depth: " << p->cost << std::endl;
+            std::cout << "Solution depth: " << p->depth << std::endl;
             return p;                               //return that child;
         }
-        if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
+
+        //if the node was expanded, increment 'expanded'
+        if (expandNode(p, oldNodes)) {  
             expanded++;
         }
-        oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
+        
+        //go through p's children and assign their cost and depth and push them into currNode
         for (unsigned int i = 0; i < p->child.size(); i++) {
-            p->child[i]->cost = findDepth(initialState);
+            p->child[i]->parent = p;
+            p->child[i]->depth = p->depth + 1;
             currNode.push_back(p->child[i]);
-        }                                                         //checked when it gets to the front of the queue
+        }   
+        
+        //push the node(p) to the vector of nodes that weve already checked
+        oldNodes.push_back(p); 
     }
     return nullptr;
 }
@@ -761,16 +791,16 @@ struct Node* Tiles::uniDist(struct Node* initialState)
 //
 Node* Tiles::misTile(Node* initialState)
 {
-    int expanded = 0;                       //used to keep track of how many nodes were expanded
-    std::vector<Node*>currNode;               //list of Nodes which will be filled will the trees nodes
-    std::vector<Node*>oldNodes;             //vector of old nodes to be checked for already checked nodes
+    int expanded = 0;                       
+    std::vector<Node*>currNode;             
+    std::vector<Node*>oldNodes;             
 
-    currNode.push_back(initialState);       //push the node containing the puzzles init state
-    if (initialState == nullptr) {          //if initial state is empty return
+    currNode.push_back(initialState);       
+    if (initialState == nullptr) {          
         return nullptr;
     }
-    while (!currNode.empty()) {             //while our queue is not empty perform expansion and checks
-        Node* p = getSmallCostHeur(currNode);               //node to be checked gets pulled from queue front
+    while (!currNode.empty()) {             
+        Node* p = getSmallCostHeur(currNode);               
         for (unsigned int i = 0; i < currNode.size(); i++) {
             if (checkDoubles(p->puzzle, currNode[i]->puzzle)) {
                 currNode.erase(currNode.begin() + i);
@@ -778,39 +808,49 @@ Node* Tiles::misTile(Node* initialState)
         }
         std::cout << "the best state to expand with a g(n) = " << p->cost << " and h(n) = " << p->depth << " is...\n";
         showPuzzle(p->puzzle);
-        if (checkPuzzle(p->puzzle)) {                 //if child matched print out that its a match and the data of the match
+
+        //if child matched print out that its a match and the data of the match
+        if (checkPuzzle(p->puzzle)) {                
             std::cout << "ITS A MATCH\n";
             std::cout << "Nodes expanded: " << expanded << std::endl;
             std::cout << "Max queue size: " << currNode.size() << std::endl;
             std::cout << "Solution depth: " << p->depth << std::endl;
             return p;                               //return that child;
         }
-        if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
+
+        //if the node was expanded, increment 'expanded'
+        if (expandNode(p, oldNodes)) {  
             expanded++;
         }
+
+        //go through p's children and assign their parent, cost and depth and push them into currNode
         for (unsigned int i = 0; i < p->child.size(); i++) {
             p->child[i]->parent = p;
             p->child[i]->cost = findMTCost(p->child[i]->puzzle);
             p->child[i]->depth = p->depth + 1;
             currNode.push_back(p->child[i]);
-        }                                                        //checked when it gets to the front of the queue
-        oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
+        }                                                      
+        
+        //push the node(p) to the vector of nodes that weve already checked
+        oldNodes.push_back(p);         
     }
     return nullptr;
 }
 
 Node* Tiles::manTile(Node* initialState)
 {
-    int expanded = 0;                       //used to keep track of how many nodes were expanded
-    std::vector<Node*>currNode;               //list of Nodes which will be filled will the trees nodes
-    std::vector<Node*>oldNodes;             //vector of old nodes to be checked for already checked nodes
+    int expanded = 0;                      
+    std::vector<Node*>currNode;            
+    std::vector<Node*>oldNodes;            
 
-    currNode.push_back(initialState);       //push the node containing the puzzles init state
-    if (initialState == nullptr) {          //if initial state is empty return
+    currNode.push_back(initialState);       
+    if (initialState == nullptr) {          
         return nullptr;
     }
-    while (!currNode.empty()) {             //while our queue is not empty perform expansion and checks
-        Node* p = getSmallCostHeur(currNode);               //node to be checked gets pulled from queue front
+
+    //while our queue is not empty perform expansion and checks
+    while (!currNode.empty()) {             
+        Node* p = getSmallCostHeur(currNode);              
         for (unsigned int i = 0; i < currNode.size(); i++) {
             if (checkDoubles(p->puzzle, currNode[i]->puzzle)) {
                 currNode.erase(currNode.begin() + i);
@@ -818,23 +858,31 @@ Node* Tiles::manTile(Node* initialState)
         }
         std::cout << "the best state to expand with a g(n) = " << p->cost << " and h(n) = " << p->depth << " is...\n";
         showPuzzle(p->puzzle);
-        if (checkPuzzle(p->puzzle)) {                 //if child matched print out that its a match and the data of the match
+
+        //if child matched print out that its a match and the data of the match
+        if (checkPuzzle(p->puzzle)) {                 
             std::cout << "ITS A MATCH\n";
             std::cout << "Nodes expanded: " << expanded << std::endl;
             std::cout << "Max queue size: " << currNode.size() << std::endl;
             std::cout << "Solution depth: " << p->depth << std::endl;
             return p;                               //return that child;
         }
-        if (expandNode(p, oldNodes)) {  //if the node was expanded, increment 'expanded'
+
+        //if the node was expanded, increment 'expanded'
+        if (expandNode(p, oldNodes)) {  
             expanded++;
         }
+
+        //go through p's children and assign their parent, cost and depth and push them into currNode
         for (unsigned int i = 0; i < p->child.size(); i++) {
             p->child[i]->parent = p;
             p->child[i]->cost = findManCost(p->child[i]->puzzle);
             p->child[i]->depth = p->depth + 1;
             currNode.push_back(p->child[i]);
-        }                                                        //checked when it gets to the front of the queue
-        oldNodes.push_back(p);          //push the node(p) to the vector of nodes that weve already checked
+        }            
+
+        //push the node(p) to the vector of nodes that weve already checked
+        oldNodes.push_back(p);          
     }
     return nullptr;
 }
